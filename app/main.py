@@ -1,7 +1,7 @@
+print(">>> main.py loaded <<<")          # <--- Add this as the first line
+
 from fastapi import FastAPI
-
 from app.db import database, User
-
 
 app = FastAPI(title="FastAPI, Docker, and Traefik")
 
@@ -9,11 +9,9 @@ app = FastAPI(title="FastAPI, Docker, and Traefik")
 async def ping():
     return {"message": "pong"}
 
-
 @app.get("/")
 async def read_root():
     return await User.objects.all()
-
 
 @app.on_event("startup")
 async def startup():
@@ -21,7 +19,6 @@ async def startup():
         await database.connect()
     # create a dummy entry
     await User.objects.get_or_create(email="test@test.com")
-
 
 @app.on_event("shutdown")
 async def shutdown():
