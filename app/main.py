@@ -5,6 +5,10 @@ from app.db import database, User
 
 app = FastAPI(title="FastAPI, Docker, and Traefik")
 
+@app.get("/ping")
+async def ping():
+    return {"message": "pong"}
+
 
 @app.get("/")
 async def read_root():
