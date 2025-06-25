@@ -1,3 +1,5 @@
+def dockerImage // Declare this ONLY at the top
+
 pipeline {
     agent any
 
@@ -7,14 +9,10 @@ pipeline {
         DOCKER_TAG = "v.${BUILD_ID}.0"
     }
 
-    // Declare dockerImage globally
-    // (Must be outside 'stages' but inside 'pipeline')
-    // Use 'script' block to assign it in the build stage
     stages {
         stage('Docker Build') {
             steps {
                 script {
-                    // Assign globally so other stages can use it
                     dockerImage = docker.build("${DOCKER_ID}/${DOCKER_IMAGE}:${DOCKER_TAG}")
                 }
             }
@@ -108,6 +106,3 @@ pipeline {
         }
     }
 }
-
-// Declare dockerImage at the top level (outside pipeline) to avoid scope issues
-def dockerImage
