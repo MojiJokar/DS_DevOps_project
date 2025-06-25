@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    DOCKER_ID = "maxjokar2020" // Your Docker Hub ID
+    DOCKER_ID = "maxjokar2020"
     DOCKER_IMAGE = "ds_devops_project"
     DOCKER_TAG = "v.${BUILD_ID}.0"
   }
@@ -38,7 +38,7 @@ pipeline {
     stage('Docker Push') {
       steps {
         script {
-          docker.withRegistry('https://index.docker.io/v1/', 'dockerHubCredentialsId') {
+          docker.withRegistry('https://index.docker.io/v1/', 'DOCKER_HUB_PASS') {
             dockerImage.push()
           }
         }
@@ -88,16 +88,16 @@ pipeline {
       steps {
         timeout(time: 15, unit: "MINUTES") {
           input message: 'Do you want to deploy in production?', ok: 'Yes'
-        }
-        script {
-          sh """
-            rm -Rf .kube && mkdir .kube
-            cat \$KUBECONFIG > .kube/config
-            cp fastapi/values.yaml values.yml
-            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-            kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
-            helm upgrade --install app fastapi --values=values.yml --namespace prod
-          """
+          script {
+            sh """
+              rm -Rf .kube && mkdir .kube
+              cat \$KUBECONFIG > .kube/config
+              cp fastapi/values.yaml values.yml
+              sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+              kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
+              helm upgrade --install app fastapi --values=values.yml --namespace prod
+            """
+          }
         }
       }
     }
