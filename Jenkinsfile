@@ -1,10 +1,11 @@
 pipeline {
+    agent any
+
     environment {
         DOCKER_ID = "maxjokar2020" // Your Docker Hub ID
         DOCKER_IMAGE = "ds_devops_project"
         DOCKER_TAG = "v.${BUILD_ID}.0"
     }
-    agent any
 
     stages {
         stage('Kubernetes Access Test') {
@@ -15,7 +16,6 @@ pipeline {
                 }
             }
         }
-
 
         stage('Docker Build') {
             steps {
@@ -47,6 +47,7 @@ pipeline {
                 }
             }
         }
+
         stage('Docker Push') {
             environment {
                 DOCKER_PASS = credentials("DOCKER_HUB_PASS")
@@ -54,14 +55,29 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    docker push $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
+                        docker login -u $DOCKER_ID -p $DOCKER_PASS
+                        docker push $DOCKER_ID/$DOCKER_IMAGE:$DOCKER_TAG
                     '''
                 }
             }
         }
 
-
-
-    } // closes 'stages'
-} // closes 'pipeline'
+        stage('Deploy to Dev') {
+            environment {
+                KUBECONFIG = credentials("config")
+            }
+            steps {
+                script {
+                    sh '''
+                        rm -Rf .kube && mkdir .kube
+                        cat $KUBECONFIG > .kube/config
+                        cp fastapi/values.yaml values.yml
+                        sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                        kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
+                        helm upgrade --install app fastapi --values=values.yml --namespace dev
+                    '''
+                }
+            }
+        }
+    }
+}
