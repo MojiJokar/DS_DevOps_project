@@ -97,5 +97,26 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to Prod') {
+            environment {
+                KUBECONFIG = credentials("kubeconfig")
+            }
+            steps {
+                timeout(time: 15, unit: "MINUTES") {
+                    input message: 'Do you want to deploy in production?', ok: 'Yes'
+                }
+                script {
+                    sh '''
+                        rm -Rf .kube && mkdir .kube
+                        cat $KUBECONFIG > .kube/config
+                        cp fastapi/values.yaml values.yml
+                        sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                        kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
+                        helm upgrade --install app fastapi --values=values.yml --namespace prod
+                    '''
+                }
+            }
+        }
     }
 }
