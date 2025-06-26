@@ -51,3 +51,5 @@ pipeline {
         }
       }
     }
+  } // <-- This closes the 'stages' block
+} // <-- This closes the 'pipeline' block
