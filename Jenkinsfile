@@ -61,7 +61,7 @@ pipeline {
                     sh """
                         rm -Rf .kube && mkdir .kube
                         cat \$KUBECONFIG > .kube/config
-                        cp helm-dev-project/values.yaml values.yml
+                        cp fastapi/values.yaml values.yml
                         sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                         kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
                         helm upgrade --install app fastapi --values=values.yml --namespace dev
