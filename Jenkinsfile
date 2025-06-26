@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_ID = "maxjokar2020" // Your Docker Hub ID
+        DOCKER_ID   = "maxjokar2020" // Your Docker Hub ID
         DOCKER_IMAGE = "ds_devops_project"
-        DOCKER_TAG = "v.${BUILD_ID}.0"
+        DOCKER_TAG  = "v.${BUILD_ID}.0"
     }
 
     stages {
@@ -117,6 +117,23 @@ pipeline {
                     '''
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            script {
+                sh 'docker rm -f jenkins || true'
+            }
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+            mail to: "mmb2020max@gmail.com",
+                 subject: "${env.JOB_NAME} - Build # ${env.BUILD_ID} has failed",
+                 body: "For more info on the pipeline failure, check out the console output at ${env.BUILD_URL}"
         }
     }
 }
