@@ -7,6 +7,16 @@ pipeline {
     agent any
 
     stages {
+        stage('Kubernetes Access Test') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    sh 'kubectl get nodes'
+                    // Add your kubectl commands here
+                }
+            }
+        }
+
+
         stage('Docker Build') {
             steps {
                 script {
