@@ -1,7 +1,7 @@
 pipeline {
   environment {
     DOCKER_ID = "maxjokar2020" // Your Docker Hub ID
-    DOCKER_IMAGE = "datascientestapi"
+    DOCKER_IMAGE = "ds_devops_project"
     DOCKER_TAG = "v.${BUILD_ID}.0"
   }
   agent any
