@@ -79,5 +79,23 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to Staging') {
+            environment {
+                KUBECONFIG = credentials("kubeconfig")
+            }
+            steps {
+                script {
+                    sh '''
+                        rm -Rf .kube && mkdir .kube
+                        cat $KUBECONFIG > .kube/config
+                        cp fastapi/values.yaml values.yml
+                        sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                        kubectl create namespace staging --dry-run=client -o yaml | kubectl apply -f -
+                        helm upgrade --install app fastapi --values=values.yml --namespace staging
+                    '''
+                }
+            }
+        }
     }
 }
